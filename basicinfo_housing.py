@@ -22,7 +22,6 @@ print(df.info())
 print(df.head())
 
 # Check for missing values
-# Check for missing values
 missing_values = df.isnull().sum()
 
 # Exclude "None" in MasVnrType from missing value count
@@ -45,6 +44,8 @@ print(df.describe())
 sns.histplot(df["SalePrice"], bins=30, kde=True)
 plt.title("Distribution of House Prices")
 plt.show()
+
+
 
 
 
