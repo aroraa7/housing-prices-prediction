@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import numpy as np
 
-### Cleaning the dataset before performing models ###
+#################### Cleaning Dataset ####################
 
 # Load the dataset
 df = pd.read_csv("housing-price.csv")
@@ -69,11 +69,8 @@ zero_counts_filtered = (df[numeric_cols_updated] == 0).sum()
 # print(zero_counts_filtered[zero_counts_filtered > 0])
 
 
-### Creating Correlation Matrix ###
+#################### Creating Correlation Matrix ####################
 
-
-import matplotlib.pyplot as plt
-import seaborn as sns
 
 # Select only numerical columns for correlation calculation
 numerical_df = df.select_dtypes(include=['int64', 'float64'])
@@ -84,7 +81,49 @@ correlation_matrix = numerical_df.corr()
 # Plot the heatmap
 plt.figure(figsize=(12, 10))
 sns.heatmap(correlation_matrix, cmap="coolwarm", annot=False, fmt=".2f", linewidths=0.5)
-plt.title("Correlation Matrix (Only Numerical Features)")
+# plt.title("Correlation Matrix (Only Numerical Features)")
+# plt.show()
+
+
+
+#################### Outlier Detection ####################
+
+## Exclude numerical features that are actually categorical or ordinal
+categorical_numerical_features = ['MSSubClass', 'OverallQual', 'OverallCond', 'MoSold', 'YrSold', 'GarageCars']
+
+# Select only continuous numerical features, excluding the target variable and categorical-like ones
+numerical_features = df.select_dtypes(include=['int64', 'float64']).drop(columns=['SalePrice'] + categorical_numerical_features, errors='ignore')
+
+### Detect Outliers in Continuous Numerical Features using IQR ###
+def detect_outliers_iqr(df, features):
+    outlier_counts = {}
+    for feature in features:
+        Q1 = df[feature].quantile(0.25)
+        Q3 = df[feature].quantile(0.75)
+        IQR = Q3 - Q1
+        lower_bound = Q1 - 1.5 * IQR
+        upper_bound = Q3 + 1.5 * IQR
+        outliers = df[(df[feature] < lower_bound) | (df[feature] > upper_bound)]
+        outlier_counts[feature] = len(outliers)
+    
+    return pd.DataFrame(outlier_counts.items(), columns=['Feature', 'Outlier Count']).sort_values(by='Outlier Count', ascending=False)
+
+# Get outlier counts for continuous numerical features
+outlier_results = detect_outliers_iqr(df, numerical_features.columns)
+print(outlier_results)
+
+### Visualizing Outliers for Continuous Numerical Features ###
+# Adjust the number of rows and columns dynamically based on the number of continuous numerical features
+num_features = len(numerical_features.columns)
+num_cols = 5  # Number of columns for subplots
+num_rows = (num_features // num_cols) + (num_features % num_cols > 0)  # Calculate required rows
+
+# Create boxplots for all continuous numerical features
+plt.figure(figsize=(20, num_rows * 4))
+for i, feature in enumerate(numerical_features.columns, 1):
+    plt.subplot(num_rows, num_cols, i)
+    sns.boxplot(y=df[feature])
+    plt.title(feature)
+
+plt.tight_layout()
 plt.show()
-
-
