@@ -55,10 +55,10 @@ cols_to_drop_zeros = zero_counts[zero_counts > zero_threshold * df.shape[0]].ind
 df.drop(columns=cols_to_drop_zeros, inplace=True)
 
 # Print dropped columns due to excessive zeros
-print(f"Dropped columns due to excessive zeros: {cols_to_drop_zeros}")
+# print(f"Dropped columns due to excessive zeros: {cols_to_drop_zeros}")
 
 # Check new shape of the dataset after dropping zero-heavy columns
-print(f"New dataset shape after dropping zero-heavy columns: {df.shape}")
+# print(f"New dataset shape after dropping zero-heavy columns: {df.shape}")
 
 # Print only columns where zeros are present (after removing excessive zero columns)
 # Recalculate zero counts after dropping columns
@@ -66,10 +66,25 @@ numeric_cols_updated = df.select_dtypes(include=['int64', 'float64']).columns  #
 zero_counts_filtered = (df[numeric_cols_updated] == 0).sum()
 
 # Print only columns where zeros are still present
-print(zero_counts_filtered[zero_counts_filtered > 0])
+# print(zero_counts_filtered[zero_counts_filtered > 0])
 
 
 ### Creating Correlation Matrix ###
 
+
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# Select only numerical columns for correlation calculation
+numerical_df = df.select_dtypes(include=['int64', 'float64'])
+
+# Compute the correlation matrix
+correlation_matrix = numerical_df.corr()
+
+# Plot the heatmap
+plt.figure(figsize=(12, 10))
+sns.heatmap(correlation_matrix, cmap="coolwarm", annot=False, fmt=".2f", linewidths=0.5)
+plt.title("Correlation Matrix (Only Numerical Features)")
+plt.show()
 
 
