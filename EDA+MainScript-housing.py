@@ -110,7 +110,7 @@ def detect_outliers_iqr(df, features):
 
 # Get outlier counts for continuous numerical features
 outlier_results = detect_outliers_iqr(df, numerical_features.columns)
-print(outlier_results)
+# print(outlier_results)
 
 ### Visualizing Outliers for Continuous Numerical Features ###
 # Adjust the number of rows and columns dynamically based on the number of continuous numerical features
@@ -125,5 +125,20 @@ for i, feature in enumerate(numerical_features.columns, 1):
     sns.boxplot(y=df[feature])
     plt.title(feature)
 
-plt.tight_layout()
-plt.show()
+# plt.tight_layout()
+# plt.show()
+
+
+
+#################### Dummy Vairables for Categorical Features ####################
+
+# Identify categorical columns
+categorical_features = df.select_dtypes(include=['object']).columns.tolist()
+
+# Apply get_dummies to encode categorical features
+df = pd.get_dummies(df, columns=categorical_features, drop_first=True)
+
+print("Dummy variables created for categorical features.")
+print(f"New dataset shape: {df.shape}")
+
+
