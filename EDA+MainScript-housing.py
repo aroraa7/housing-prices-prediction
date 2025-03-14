@@ -138,7 +138,31 @@ categorical_features = df.select_dtypes(include=['object']).columns.tolist()
 # Apply get_dummies to encode categorical features
 df = pd.get_dummies(df, columns=categorical_features, drop_first=True)
 
+# Convert boolean values to integers (0s and 1s)
+df = df.astype(int)
+
+# print(df)
+
 print("Dummy variables created for categorical features.")
 print(f"New dataset shape: {df.shape}")
+
+
+#################### Log Transform Continuous Features ####################
+# print(df)
+# Select only continuous numerical features for log transformation
+numerical_features = df.select_dtypes(include=['int64', 'float64']).drop(columns=['SalePrice'] + categorical_numerical_features, errors='ignore')
+
+# Apply log transformation using np.log1p (log(1 + x) to avoid log(0) issues)
+df[numerical_features.columns] = df[numerical_features.columns].apply(lambda x: np.log1p(x))
+
+# Apply log transformation to the target variable (SalePrice)
+df['SalePrice'] = np.log1p(df['SalePrice'])
+
+print("Log transformation applied to continuous numerical features and target variable.")
+
+# print(df)
+
+
+
 
 
