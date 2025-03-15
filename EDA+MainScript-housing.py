@@ -143,8 +143,8 @@ df = df.astype(int)
 
 # print(df)
 
-print("Dummy variables created for categorical features.")
-print(f"New dataset shape: {df.shape}")
+# print("Dummy variables created for categorical features.")
+# print(f"New dataset shape: {df.shape}")
 
 
 #################### Log Transform Continuous Features ####################
@@ -158,11 +158,51 @@ df[numerical_features.columns] = df[numerical_features.columns].apply(lambda x: 
 # Apply log transformation to the target variable (SalePrice)
 df['SalePrice'] = np.log1p(df['SalePrice'])
 
-print("Log transformation applied to continuous numerical features and target variable.")
+# print("Log transformation applied to continuous numerical features and target variable.")
 
 # print(df)
 
 
+
+#################### Split Data Train/Test sets ####################
+
+
+from sklearn.model_selection import train_test_split
+
+# Separate target variable (SalePrice) and features
+X = df.drop(columns=['SalePrice'])  # Features
+y = df['SalePrice']  # Target variable
+
+# Split data into training (80%) and testing (20%)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# print(f"Training set shape: X_train: {X_train.shape}, y_train: {y_train.shape}")
+# print(f"Test set shape: X_test: {X_test.shape}, y_test: {y_test.shape}")
+
+
+#################### Perform Lasso to Select Features ####################
+
+from sklearn.linear_model import LassoCV
+from sklearn.preprocessing import StandardScaler
+
+# Standardize numerical features (Lasso is sensitive to scale)
+scaler = StandardScaler()
+X_train_scaled = scaler.fit_transform(X_train)
+X_test_scaled = scaler.transform(X_test)
+
+# Train Lasso with Cross-Validation to find best alpha
+lasso = LassoCV(cv=5, random_state=42).fit(X_train_scaled, y_train)
+
+# Get feature importance (nonzero coefficients)
+selected_features = np.array(X_train.columns)[lasso.coef_ != 0]
+
+# Keep only selected features
+X_train_reduced = X_train[selected_features]
+X_test_reduced = X_test[selected_features]
+print(selected_features)
+print(f"Number of selected features: {len(selected_features)}")
+print(f"Reduced training set shape: {X_train_reduced.shape}")
+print(f"Reduced test set shape: {X_test_reduced.shape}")
 
 
 
