@@ -144,7 +144,7 @@ df = df.astype(int)
 # print(df)
 
 # print("Dummy variables created for categorical features.")
-print(f"New dataset shape: {df.shape}")
+# print(f"New dataset shape: {df.shape}")
 
 
 #################### Log Transform Continuous Features ####################
@@ -213,169 +213,76 @@ X_test_selected = X_test[selected_features]
 #################### Perform Baseline models, random forest, and XGBoost without and with CV ####################
 
 
-
 # from sklearn.model_selection import cross_val_score
 # from sklearn.linear_model import LinearRegression
 # from sklearn.svm import SVR
-# from sklearn.metrics import mean_squared_error, r2_score
-
-# # Initialize models
-# lin_reg = LinearRegression()
-# svm_reg = SVR(kernel='rbf')  # RBF kernel for non-linear relationships
-
-# # Perform Cross-Validation on Training Data (MSE)
-# lin_reg_cv_mse = cross_val_score(lin_reg, X_train_reduced, y_train, 
-#                                  scoring="neg_mean_squared_error", cv=5)
-
-# svm_cv_mse = cross_val_score(svm_reg, X_train_reduced, y_train, 
-#                              scoring="neg_mean_squared_error", cv=5)
-
-# # Convert scores to positive MSE
-# lin_reg_mse = -lin_reg_cv_mse.mean()
-# svm_mse = -svm_cv_mse.mean()
-
-# # Perform Cross-Validation on Training Data (R² Score)
-# lin_reg_cv_r2 = cross_val_score(lin_reg, X_train_reduced, y_train, 
-#                                 scoring="r2", cv=5)
-
-# svm_cv_r2 = cross_val_score(svm_reg, X_train_reduced, y_train, 
-#                             scoring="r2", cv=5)
-
-# # Compute mean R² scores
-# lin_reg_r2 = lin_reg_cv_r2.mean()
-# svm_r2 = svm_cv_r2.mean()
-
-# print(f"Cross-Validation Results (Training Set)")
-# print(f"   - Linear Regression MSE: {lin_reg_mse:.4f}, R²: {lin_reg_r2:.4f}")
-# print(f"   - SVM Regression MSE: {svm_mse:.4f}, R²: {svm_r2:.4f}")
-
-# # Train the models on the full training set
-# lin_reg.fit(X_train_reduced, y_train)
-# svm_reg.fit(X_train_reduced, y_train)
-
-# # Evaluate on the test set
-# y_pred_lin = lin_reg.predict(X_test_reduced)
-# y_pred_svm = svm_reg.predict(X_test_reduced)
-
-# # Compute test set performance
-# lin_reg_test_mse = mean_squared_error(y_test, y_pred_lin)
-# svm_test_mse = mean_squared_error(y_test, y_pred_svm)
-
-# lin_reg_test_r2 = r2_score(y_test, y_pred_lin)
-# svm_test_r2 = r2_score(y_test, y_pred_svm)
-
-# print(f"\n Final Model Performance on Test Set")
-# print(f"   - Linear Regression MSE: {lin_reg_test_mse:.4f}, R²: {lin_reg_test_r2:.4f}")
-# print(f"   - SVM Regression MSE: {svm_test_mse:.4f}, R²: {svm_test_r2:.4f}")
-
-
-# #################### Perform Random Forest and XGboost selected features from Lasso ####################
 # from sklearn.ensemble import RandomForestRegressor
-# # from xgboost import XGBRegressor
+# from xgboost import XGBRegressor
 # from sklearn.metrics import mean_squared_error, r2_score
-
-# # Keep only Lasso-selected features
-# X_train_reduced = X_train[selected_features]
-# X_test_reduced = X_test[selected_features]
-
-# # Initialize models
-# rf_model = RandomForestRegressor(n_estimators=100, random_state=42)
-# # xgb_model = XGBRegressor(n_estimators=100, random_state=42)
-
-# # Train models
-# rf_model.fit(X_train_reduced, y_train)
-# # xgb_model.fit(X_train_reduced, y_train)
-
-# # Make predictions
-# y_pred_rf = rf_model.predict(X_test_reduced)
-# # y_pred_xgb = xgb_model.predict(X_test_reduced)
-
-# # Compute performance metrics
-# rf_mse = mean_squared_error(y_test, y_pred_rf)
-# rf_r2 = r2_score(y_test, y_pred_rf)
-
-# # xgb_mse = mean_squared_error(y_test, y_pred_xgb)
-# # xgb_r2 = r2_score(y_test, y_pred_xgb)
-
-# # Print results
-# print(f"Random Forest Performance:")
-# print(f"   - Mean Squared Error (MSE): {rf_mse:.4f}")
-# print(f"   - R² Score: {rf_r2:.4f}\n")
-
-# # print(f"XGBoost Performance:")
-# # print(f"   - Mean Squared Error (MSE): {xgb_mse:.4f}")
-# # print(f"   - R² Score: {xgb_r2:.4f}")
+# from scipy.stats import ttest_rel
 
 
-from sklearn.model_selection import cross_val_score
-from sklearn.linear_model import LinearRegression
-from sklearn.svm import SVR
-from sklearn.ensemble import RandomForestRegressor
-# import xgboost as XGBRegressor
-from sklearn.metrics import mean_squared_error, r2_score
+# ### Linear Regression ###
+# lin_reg = LinearRegression()
+# lin_reg.fit(X_train_selected, y_train)
 
+# # Training and testing predictions
+# y_train_pred = lin_reg.predict(X_train_selected)
+# y_test_pred = lin_reg.predict(X_test_selected)
 
-### Linear Regression ###
-lin_reg = LinearRegression()
-lin_reg.fit(X_train_selected, y_train)
+# # Compute errors
+# lin_reg_train_mse = mean_squared_error(y_train, y_train_pred)
+# lin_reg_test_mse = mean_squared_error(y_test, y_test_pred)
+# lin_reg_train_r2 = r2_score(y_train, y_train_pred)
+# lin_reg_test_r2 = r2_score(y_test, y_test_pred)
 
-# Training and testing predictions
-y_train_pred = lin_reg.predict(X_train_selected)
-y_test_pred = lin_reg.predict(X_test_selected)
+# print(f"Linear Regression Training Error: {lin_reg_train_mse:.4f}, R²: {lin_reg_train_r2:.4f}")
+# print(f"Linear Regression Testing Error: {lin_reg_test_mse:.4f}, R²: {lin_reg_test_r2:.4f}")
 
-# Compute errors
-lin_reg_train_mse = mean_squared_error(y_train, y_train_pred)
-lin_reg_test_mse = mean_squared_error(y_test, y_test_pred)
-lin_reg_train_r2 = r2_score(y_train, y_train_pred)
-lin_reg_test_r2 = r2_score(y_test, y_test_pred)
+# # Cross-validation
+# lin_reg_cv_mse = -np.mean(cross_val_score(lin_reg, X_train_selected, y_train, scoring='neg_mean_squared_error', cv=10))
+# print(f"Linear Regression Cross-Validation MSE: {lin_reg_cv_mse:.4f}")
 
-print(f"Linear Regression Training Error: {lin_reg_train_mse:.4f}, R²: {lin_reg_train_r2:.4f}")
-print(f"Linear Regression Testing Error: {lin_reg_test_mse:.4f}, R²: {lin_reg_test_r2:.4f}")
+# ### Support Vector Machine ###
+# svm_reg = SVR()
+# svm_reg.fit(X_train_selected, y_train)
 
-# Cross-validation
-lin_reg_cv_mse = -np.mean(cross_val_score(lin_reg, X_train_selected, y_train, scoring='neg_mean_squared_error', cv=10))
-print(f"Linear Regression Cross-Validation MSE: {lin_reg_cv_mse:.4f}")
+# y_train_pred = svm_reg.predict(X_train_selected)
+# y_test_pred = svm_reg.predict(X_test_selected)
 
-### Support Vector Machine ###
-svm_reg = SVR()
-svm_reg.fit(X_train_selected, y_train)
+# svm_train_mse = mean_squared_error(y_train, y_train_pred)
+# svm_test_mse = mean_squared_error(y_test, y_test_pred)
+# svm_train_r2 = r2_score(y_train, y_train_pred)
+# svm_test_r2 = r2_score(y_test, y_test_pred)
 
-y_train_pred = svm_reg.predict(X_train_selected)
-y_test_pred = svm_reg.predict(X_test_selected)
+# print(f"SVM Training Error: {svm_train_mse:.4f}, R²: {svm_train_r2:.4f}")
+# print(f"SVM Testing Error: {svm_test_mse:.4f}, R²: {svm_test_r2:.4f}")
 
-svm_train_mse = mean_squared_error(y_train, y_train_pred)
-svm_test_mse = mean_squared_error(y_test, y_test_pred)
-svm_train_r2 = r2_score(y_train, y_train_pred)
-svm_test_r2 = r2_score(y_test, y_test_pred)
+# # Cross-validation
+# svm_cv_mse = -np.mean(cross_val_score(svm_reg, X_train_selected, y_train, scoring='neg_mean_squared_error', cv=10))
+# print(f"SVM Cross-Validation MSE: {svm_cv_mse:.4f}")
 
-print(f"SVM Training Error: {svm_train_mse:.4f}, R²: {svm_train_r2:.4f}")
-print(f"SVM Testing Error: {svm_test_mse:.4f}, R²: {svm_test_r2:.4f}")
+# ### Random Forest ###
+# rf_reg = RandomForestRegressor(n_estimators=100, random_state=42)
+# rf_reg.fit(X_train_selected, y_train)
 
-# Cross-validation
-svm_cv_mse = -np.mean(cross_val_score(svm_reg, X_train_selected, y_train, scoring='neg_mean_squared_error', cv=10))
-print(f"SVM Cross-Validation MSE: {svm_cv_mse:.4f}")
+# y_train_pred = rf_reg.predict(X_train_selected)
+# y_test_pred = rf_reg.predict(X_test_selected)
 
-### Random Forest ###
-rf_reg = RandomForestRegressor(n_estimators=100, random_state=42)
-rf_reg.fit(X_train_selected, y_train)
+# rf_train_mse = mean_squared_error(y_train, y_train_pred)
+# rf_test_mse = mean_squared_error(y_test, y_test_pred)
+# rf_train_r2 = r2_score(y_train, y_train_pred)
+# rf_test_r2 = r2_score(y_test, y_test_pred)
 
-y_train_pred = rf_reg.predict(X_train_selected)
-y_test_pred = rf_reg.predict(X_test_selected)
+# print(f"Random Forest Training Error: {rf_train_mse:.4f}, R²: {rf_train_r2:.4f}")
+# print(f"Random Forest Testing Error: {rf_test_mse:.4f}, R²: {rf_test_r2:.4f}")
 
-rf_train_mse = mean_squared_error(y_train, y_train_pred)
-rf_test_mse = mean_squared_error(y_test, y_test_pred)
-rf_train_r2 = r2_score(y_train, y_train_pred)
-rf_test_r2 = r2_score(y_test, y_test_pred)
+# # Cross-validation
+# rf_cv_mse = -np.mean(cross_val_score(rf_reg, X_train_selected, y_train, scoring='neg_mean_squared_error', cv=10))
+# print(f"Random Forest Cross-Validation MSE: {rf_cv_mse:.4f}")
 
-print(f"Random Forest Training Error: {rf_train_mse:.4f}, R²: {rf_train_r2:.4f}")
-print(f"Random Forest Testing Error: {rf_test_mse:.4f}, R²: {rf_test_r2:.4f}")
-
-# Cross-validation
-rf_cv_mse = -np.mean(cross_val_score(rf_reg, X_train_selected, y_train, scoring='neg_mean_squared_error', cv=10))
-print(f"Random Forest Cross-Validation MSE: {rf_cv_mse:.4f}")
-
-## XGBoost ###
-# xgb_reg = XGBRegressor(n_estimators=100, random_state=42, n_jobs = 1)
+# ## XGBoost ###
+# xgb_reg = XGBRegressor(n_estimators=100, random_state=42)
 # xgb_reg.fit(X_train_selected, y_train)
 
 # y_train_pred = xgb_reg.predict(X_train_selected)
@@ -392,3 +299,62 @@ print(f"Random Forest Cross-Validation MSE: {rf_cv_mse:.4f}")
 # # Cross-validation
 # xgb_cv_mse = -np.mean(cross_val_score(xgb_reg, X_train_selected, y_train, scoring='neg_mean_squared_error', cv=5))
 # print(f"XGBoost Cross-Validation MSE: {xgb_cv_mse:.4f}")
+
+from scipy.stats import ttest_rel
+from sklearn.model_selection import cross_val_score
+from sklearn.linear_model import LinearRegression
+from sklearn.svm import SVR
+from sklearn.ensemble import RandomForestRegressor
+from xgboost import XGBRegressor
+from sklearn.metrics import mean_squared_error
+
+### Train Models ###
+models = {
+    "Linear Regression": LinearRegression(),
+    "SVM": SVR(),
+    "Random Forest": RandomForestRegressor(n_estimators=100, random_state=42),
+    "XGBoost": XGBRegressor(n_estimators=100, random_state=42)
+}
+
+# Store results
+train_errors = {}
+test_errors = {}
+cv_mse_scores = {}
+
+for name, model in models.items():
+    model.fit(X_train_selected, y_train)
+
+    # Training and testing errors
+    y_train_pred = model.predict(X_train_selected)
+    y_test_pred = model.predict(X_test_selected)
+
+    train_errors[name] = mean_squared_error(y_train, y_train_pred)
+    test_errors[name] = mean_squared_error(y_test, y_test_pred)
+
+    # Cross-validation errors
+    cv_mse_scores[name] = -cross_val_score(model, X_train_selected, y_train, 
+                                           scoring='neg_mean_squared_error', cv=10)
+
+    print(f"{name} Performance:")
+    print(f"   - Training MSE: {train_errors[name]:.4f}")
+    print(f"   - Testing MSE: {test_errors[name]:.4f}")
+    print(f"   - Cross-Validation MSE: {np.mean(cv_mse_scores[name]):.4f}")
+
+
+#################### Perform t-tests to compare models ####################
+
+# Perform paired t-tests comparing each model to Random Forest
+rf_cv_scores = cv_mse_scores["Random Forest"]  # Get Random Forest CV scores
+print("\nT-test results comparing each model to Random Forest:")
+for name, scores in cv_mse_scores.items():
+    if name != "Random Forest":
+        t_stat, p_value = ttest_rel(scores, rf_cv_scores)
+        print(f"{name} vs Random Forest: p-value = {p_value:.4e}")
+
+# Perform paired t-tests comparing each model to XGBoost
+xgb_cv_scores = cv_mse_scores["XGBoost"]  # Get XGBoost CV scores
+print("\nT-test results comparing each model to XGBoost:")
+for name, scores in cv_mse_scores.items():
+    if name != "XGBoost":
+        t_stat, p_value = ttest_rel(scores, xgb_cv_scores)
+        print(f"{name} vs XGBoost: p-value = {p_value:.4e}")
