@@ -1,4 +1,3 @@
-# Import necessary libraries
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -9,21 +8,20 @@ import numpy as np
 # Load the dataset
 df = pd.read_csv("housing-price.csv")
 
-# Define a threshold and missing_values
+#a threshold and missing_values
 threshold = 0.45
 
-# Replace "?" with NaN to properly recognize missing values
+#replace "?" with NaN to properly recognize missing values, my dataset had ? where missing values were from the conversion from arff to csv file (got it to convert with repo in github)
 df.replace("?", np.nan, inplace=True)
 missing_values = df.isnull().sum()
 
-# Exclude "None" in MasVnrType from missing value count
+# exclude "None" in MasVnrType from missing value count
 missing_values_corrected = missing_values.drop(labels=["MasVnrType"], errors="ignore")
 
 
-# Identify columns where the percentage of missing values is greater than the threshold
+#columns where the percentage of missing values is greater than the threshold
 cols_to_drop = missing_values_corrected[missing_values_corrected > threshold * df.shape[0]].index.tolist()
 
-# Drop these columns
 df.drop(columns=cols_to_drop, inplace=True)
 
 # Print the columns that were dropped
@@ -45,7 +43,7 @@ numeric_cols = df.select_dtypes(include=['int64', 'float64']).columns
 # Count zeros in each numerical column
 zero_counts = (df[numeric_cols] == 0).sum()
 
-## Checking to see if more columns need to be dropped due to excessive zeros ##
+##checking to see if more columns need to be dropped due to excessive zeros ##
 zero_threshold = 0.45  # 45% of dataset
 
 # Identify columns where the percentage of zeros is greater than the threshold
@@ -72,10 +70,9 @@ zero_counts_filtered = (df[numeric_cols_updated] == 0).sum()
 #################### Creating Correlation Matrix ####################
 
 
-# Select only numerical columns for correlation calculation
+#only numerical columns for correlation calculation
 numerical_df = df.select_dtypes(include=['int64', 'float64'])
 
-# Compute the correlation matrix
 correlation_matrix = numerical_df.corr()
 
 # Plot the heatmap
@@ -88,10 +85,10 @@ sns.heatmap(correlation_matrix, cmap="coolwarm", annot=False, fmt=".2f", linewid
 
 #################### Outlier Detection ####################
 
-## Exclude numerical features that are actually categorical or ordinal
+##exclude numerical features that are actually categorical or ordinal
 categorical_numerical_features = ['MSSubClass', 'OverallQual', 'OverallCond', 'MoSold', 'YrSold', 'GarageCars']
 
-# Select only continuous numerical features, excluding the target variable and categorical-like ones
+#select only continuous numerical features, excluding the target variable and categorical-like ones
 numerical_features = df.select_dtypes(include=['int64', 'float64']).drop(columns=['SalePrice'] + categorical_numerical_features, errors='ignore')
 
 ### Detect Outliers in Continuous Numerical Features using IQR ###
@@ -108,7 +105,7 @@ def detect_outliers_iqr(df, features):
     
     return pd.DataFrame(outlier_counts.items(), columns=['Feature', 'Outlier Count']).sort_values(by='Outlier Count', ascending=False)
 
-# Get outlier counts for continuous numerical features
+#get outlier counts for continuous numerical features
 outlier_results = detect_outliers_iqr(df, numerical_features.columns)
 # print(outlier_results)
 
@@ -132,13 +129,12 @@ for i, feature in enumerate(numerical_features.columns, 1):
 
 #################### Dummy Vairables for Categorical Features ####################
 
-# Identify categorical columns
 categorical_features = df.select_dtypes(include=['object']).columns.tolist()
 
-# Apply get_dummies to encode categorical features
+# get_dummies to encode categorical features
 df = pd.get_dummies(df, columns=categorical_features, drop_first=True)
 
-# Convert boolean values to integers (0s and 1s)
+#convert boolean values to integers (0s and 1s)
 df = df.astype(int)
 
 # print(df)
@@ -149,13 +145,10 @@ df = df.astype(int)
 
 #################### Log Transform Continuous Features ####################
 # print(df)
-# Select only continuous numerical features for log transformation
 numerical_features = df.select_dtypes(include=['int64', 'float64']).drop(columns=['SalePrice'] + categorical_numerical_features, errors='ignore')
 
-# Apply log transformation using np.log1p (log(1 + x) to avoid log(0) issues)
 df[numerical_features.columns] = df[numerical_features.columns].apply(lambda x: np.log1p(x))
 
-# Apply log transformation to the target variable (SalePrice)
 df['SalePrice'] = np.log1p(df['SalePrice'])
 
 # print("Log transformation applied to continuous numerical features and target variable.")
@@ -169,11 +162,9 @@ df['SalePrice'] = np.log1p(df['SalePrice'])
 
 from sklearn.model_selection import train_test_split
 
-# Separate target variable (SalePrice) and features
-X = df.drop(columns=['SalePrice'])  # Features
-y = df['SalePrice']  # Target variable
+X = df.drop(columns=['SalePrice'])  # features
+y = df['SalePrice']  # target
 
-# Split data into training (80%) and testing (20%)
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
 # print(f"Training set shape: X_train: {X_train.shape}, y_train: {y_train.shape}")
@@ -185,18 +176,18 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_
 from sklearn.linear_model import LassoCV
 from sklearn.preprocessing import StandardScaler
 
-# Standardize numerical features (Lasso is sensitive to scale)
+#standardize numerical features
 scaler = StandardScaler()
 X_train_scaled = scaler.fit_transform(X_train)
 X_test_scaled = scaler.transform(X_test)
 
-# Train Lasso with Cross-Validation to find best alpha
+# Lasso with Cross-Validation to find best alpha
 lasso = LassoCV(cv=5, random_state=42).fit(X_train_scaled, y_train)
 
-# Get feature importance (nonzero coefficients)
+# get feature importance (nonzero coefficients)
 selected_features = np.array(X_train.columns)[lasso.coef_ != 0]
 
-# Keep only selected features
+# keep only selected features
 X_train_selected = X_train[selected_features]
 X_test_selected = X_test[selected_features]
 # print(selected_features)
@@ -300,7 +291,6 @@ X_test_selected = X_test[selected_features]
 # xgb_cv_mse = -np.mean(cross_val_score(xgb_reg, X_train_selected, y_train, scoring='neg_mean_squared_error', cv=5))
 # print(f"XGBoost Cross-Validation MSE: {xgb_cv_mse:.4f}")
 
-from scipy.stats import ttest_rel
 from sklearn.model_selection import cross_val_score
 from sklearn.linear_model import LinearRegression
 from sklearn.svm import SVR
@@ -308,7 +298,6 @@ from sklearn.ensemble import RandomForestRegressor
 from xgboost import XGBRegressor
 from sklearn.metrics import mean_squared_error
 
-### Train Models ###
 models = {
     "Linear Regression": LinearRegression(),
     "SVM": SVR(),
@@ -316,7 +305,6 @@ models = {
     "XGBoost": XGBRegressor(n_estimators=100, random_state=42)
 }
 
-# Store results
 train_errors = {}
 test_errors = {}
 cv_mse_scores = {}
@@ -324,14 +312,14 @@ cv_mse_scores = {}
 for name, model in models.items():
     model.fit(X_train_selected, y_train)
 
-    # Training and testing errors
+    #training and testing errors
     y_train_pred = model.predict(X_train_selected)
     y_test_pred = model.predict(X_test_selected)
 
     train_errors[name] = mean_squared_error(y_train, y_train_pred)
     test_errors[name] = mean_squared_error(y_test, y_test_pred)
 
-    # Cross-validation errors
+    #CV errors
     cv_mse_scores[name] = -cross_val_score(model, X_train_selected, y_train, 
                                            scoring='neg_mean_squared_error', cv=10)
 
@@ -343,16 +331,18 @@ for name, model in models.items():
 
 #################### Perform t-tests to compare models ####################
 
-# Perform paired t-tests comparing each model to Random Forest
-rf_cv_scores = cv_mse_scores["Random Forest"]  # Get Random Forest CV scores
+from scipy.stats import ttest_rel
+
+# paired t-tests comparing each model to Random Forest
+rf_cv_scores = cv_mse_scores["Random Forest"]  # got Random Forest CV scores
 print("\nT-test results comparing each model to Random Forest:")
 for name, scores in cv_mse_scores.items():
     if name != "Random Forest":
         t_stat, p_value = ttest_rel(scores, rf_cv_scores)
         print(f"{name} vs Random Forest: p-value = {p_value:.4e}")
 
-# Perform paired t-tests comparing each model to XGBoost
-xgb_cv_scores = cv_mse_scores["XGBoost"]  # Get XGBoost CV scores
+# paired t-tests comparing each model to XGBoost
+xgb_cv_scores = cv_mse_scores["XGBoost"]  
 print("\nT-test results comparing each model to XGBoost:")
 for name, scores in cv_mse_scores.items():
     if name != "XGBoost":
