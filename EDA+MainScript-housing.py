@@ -144,7 +144,7 @@ df = df.astype(int)
 # print(df)
 
 # print("Dummy variables created for categorical features.")
-# print(f"New dataset shape: {df.shape}")
+print(f"New dataset shape: {df.shape}")
 
 
 #################### Log Transform Continuous Features ####################
@@ -197,12 +197,198 @@ lasso = LassoCV(cv=5, random_state=42).fit(X_train_scaled, y_train)
 selected_features = np.array(X_train.columns)[lasso.coef_ != 0]
 
 # Keep only selected features
-X_train_reduced = X_train[selected_features]
-X_test_reduced = X_test[selected_features]
-print(selected_features)
-print(f"Number of selected features: {len(selected_features)}")
-print(f"Reduced training set shape: {X_train_reduced.shape}")
-print(f"Reduced test set shape: {X_test_reduced.shape}")
+X_train_selected = X_train[selected_features]
+X_test_selected = X_test[selected_features]
+# print(selected_features)
+
+# print(f"Number of selected features: {len(selected_features)}")
+# print(f"Reduced training set shape: {X_train_reduced.shape}")
+# print(f"Reduced test set shape: {X_test_reduced.shape}")
 
 
 
+
+
+
+#################### Perform Baseline models, random forest, and XGBoost without and with CV ####################
+
+
+
+# from sklearn.model_selection import cross_val_score
+# from sklearn.linear_model import LinearRegression
+# from sklearn.svm import SVR
+# from sklearn.metrics import mean_squared_error, r2_score
+
+# # Initialize models
+# lin_reg = LinearRegression()
+# svm_reg = SVR(kernel='rbf')  # RBF kernel for non-linear relationships
+
+# # Perform Cross-Validation on Training Data (MSE)
+# lin_reg_cv_mse = cross_val_score(lin_reg, X_train_reduced, y_train, 
+#                                  scoring="neg_mean_squared_error", cv=5)
+
+# svm_cv_mse = cross_val_score(svm_reg, X_train_reduced, y_train, 
+#                              scoring="neg_mean_squared_error", cv=5)
+
+# # Convert scores to positive MSE
+# lin_reg_mse = -lin_reg_cv_mse.mean()
+# svm_mse = -svm_cv_mse.mean()
+
+# # Perform Cross-Validation on Training Data (R² Score)
+# lin_reg_cv_r2 = cross_val_score(lin_reg, X_train_reduced, y_train, 
+#                                 scoring="r2", cv=5)
+
+# svm_cv_r2 = cross_val_score(svm_reg, X_train_reduced, y_train, 
+#                             scoring="r2", cv=5)
+
+# # Compute mean R² scores
+# lin_reg_r2 = lin_reg_cv_r2.mean()
+# svm_r2 = svm_cv_r2.mean()
+
+# print(f"Cross-Validation Results (Training Set)")
+# print(f"   - Linear Regression MSE: {lin_reg_mse:.4f}, R²: {lin_reg_r2:.4f}")
+# print(f"   - SVM Regression MSE: {svm_mse:.4f}, R²: {svm_r2:.4f}")
+
+# # Train the models on the full training set
+# lin_reg.fit(X_train_reduced, y_train)
+# svm_reg.fit(X_train_reduced, y_train)
+
+# # Evaluate on the test set
+# y_pred_lin = lin_reg.predict(X_test_reduced)
+# y_pred_svm = svm_reg.predict(X_test_reduced)
+
+# # Compute test set performance
+# lin_reg_test_mse = mean_squared_error(y_test, y_pred_lin)
+# svm_test_mse = mean_squared_error(y_test, y_pred_svm)
+
+# lin_reg_test_r2 = r2_score(y_test, y_pred_lin)
+# svm_test_r2 = r2_score(y_test, y_pred_svm)
+
+# print(f"\n Final Model Performance on Test Set")
+# print(f"   - Linear Regression MSE: {lin_reg_test_mse:.4f}, R²: {lin_reg_test_r2:.4f}")
+# print(f"   - SVM Regression MSE: {svm_test_mse:.4f}, R²: {svm_test_r2:.4f}")
+
+
+# #################### Perform Random Forest and XGboost selected features from Lasso ####################
+# from sklearn.ensemble import RandomForestRegressor
+# # from xgboost import XGBRegressor
+# from sklearn.metrics import mean_squared_error, r2_score
+
+# # Keep only Lasso-selected features
+# X_train_reduced = X_train[selected_features]
+# X_test_reduced = X_test[selected_features]
+
+# # Initialize models
+# rf_model = RandomForestRegressor(n_estimators=100, random_state=42)
+# # xgb_model = XGBRegressor(n_estimators=100, random_state=42)
+
+# # Train models
+# rf_model.fit(X_train_reduced, y_train)
+# # xgb_model.fit(X_train_reduced, y_train)
+
+# # Make predictions
+# y_pred_rf = rf_model.predict(X_test_reduced)
+# # y_pred_xgb = xgb_model.predict(X_test_reduced)
+
+# # Compute performance metrics
+# rf_mse = mean_squared_error(y_test, y_pred_rf)
+# rf_r2 = r2_score(y_test, y_pred_rf)
+
+# # xgb_mse = mean_squared_error(y_test, y_pred_xgb)
+# # xgb_r2 = r2_score(y_test, y_pred_xgb)
+
+# # Print results
+# print(f"Random Forest Performance:")
+# print(f"   - Mean Squared Error (MSE): {rf_mse:.4f}")
+# print(f"   - R² Score: {rf_r2:.4f}\n")
+
+# # print(f"XGBoost Performance:")
+# # print(f"   - Mean Squared Error (MSE): {xgb_mse:.4f}")
+# # print(f"   - R² Score: {xgb_r2:.4f}")
+
+
+from sklearn.model_selection import cross_val_score
+from sklearn.linear_model import LinearRegression
+from sklearn.svm import SVR
+from sklearn.ensemble import RandomForestRegressor
+# import xgboost as XGBRegressor
+from sklearn.metrics import mean_squared_error, r2_score
+
+
+### Linear Regression ###
+lin_reg = LinearRegression()
+lin_reg.fit(X_train_selected, y_train)
+
+# Training and testing predictions
+y_train_pred = lin_reg.predict(X_train_selected)
+y_test_pred = lin_reg.predict(X_test_selected)
+
+# Compute errors
+lin_reg_train_mse = mean_squared_error(y_train, y_train_pred)
+lin_reg_test_mse = mean_squared_error(y_test, y_test_pred)
+lin_reg_train_r2 = r2_score(y_train, y_train_pred)
+lin_reg_test_r2 = r2_score(y_test, y_test_pred)
+
+print(f"Linear Regression Training Error: {lin_reg_train_mse:.4f}, R²: {lin_reg_train_r2:.4f}")
+print(f"Linear Regression Testing Error: {lin_reg_test_mse:.4f}, R²: {lin_reg_test_r2:.4f}")
+
+# Cross-validation
+lin_reg_cv_mse = -np.mean(cross_val_score(lin_reg, X_train_selected, y_train, scoring='neg_mean_squared_error', cv=10))
+print(f"Linear Regression Cross-Validation MSE: {lin_reg_cv_mse:.4f}")
+
+### Support Vector Machine ###
+svm_reg = SVR()
+svm_reg.fit(X_train_selected, y_train)
+
+y_train_pred = svm_reg.predict(X_train_selected)
+y_test_pred = svm_reg.predict(X_test_selected)
+
+svm_train_mse = mean_squared_error(y_train, y_train_pred)
+svm_test_mse = mean_squared_error(y_test, y_test_pred)
+svm_train_r2 = r2_score(y_train, y_train_pred)
+svm_test_r2 = r2_score(y_test, y_test_pred)
+
+print(f"SVM Training Error: {svm_train_mse:.4f}, R²: {svm_train_r2:.4f}")
+print(f"SVM Testing Error: {svm_test_mse:.4f}, R²: {svm_test_r2:.4f}")
+
+# Cross-validation
+svm_cv_mse = -np.mean(cross_val_score(svm_reg, X_train_selected, y_train, scoring='neg_mean_squared_error', cv=10))
+print(f"SVM Cross-Validation MSE: {svm_cv_mse:.4f}")
+
+### Random Forest ###
+rf_reg = RandomForestRegressor(n_estimators=100, random_state=42)
+rf_reg.fit(X_train_selected, y_train)
+
+y_train_pred = rf_reg.predict(X_train_selected)
+y_test_pred = rf_reg.predict(X_test_selected)
+
+rf_train_mse = mean_squared_error(y_train, y_train_pred)
+rf_test_mse = mean_squared_error(y_test, y_test_pred)
+rf_train_r2 = r2_score(y_train, y_train_pred)
+rf_test_r2 = r2_score(y_test, y_test_pred)
+
+print(f"Random Forest Training Error: {rf_train_mse:.4f}, R²: {rf_train_r2:.4f}")
+print(f"Random Forest Testing Error: {rf_test_mse:.4f}, R²: {rf_test_r2:.4f}")
+
+# Cross-validation
+rf_cv_mse = -np.mean(cross_val_score(rf_reg, X_train_selected, y_train, scoring='neg_mean_squared_error', cv=10))
+print(f"Random Forest Cross-Validation MSE: {rf_cv_mse:.4f}")
+
+## XGBoost ###
+# xgb_reg = XGBRegressor(n_estimators=100, random_state=42, n_jobs = 1)
+# xgb_reg.fit(X_train_selected, y_train)
+
+# y_train_pred = xgb_reg.predict(X_train_selected)
+# y_test_pred = xgb_reg.predict(X_test_selected)
+
+# xgb_train_mse = mean_squared_error(y_train, y_train_pred)
+# xgb_test_mse = mean_squared_error(y_test, y_test_pred)
+# xgb_train_r2 = r2_score(y_train, y_train_pred)
+# xgb_test_r2 = r2_score(y_test, y_test_pred)
+
+# print(f"XGBoost Training Error: {xgb_train_mse:.4f}, R²: {xgb_train_r2:.4f}")
+# print(f"XGBoost Testing Error: {xgb_test_mse:.4f}, R²: {xgb_test_r2:.4f}")
+
+# # Cross-validation
+# xgb_cv_mse = -np.mean(cross_val_score(xgb_reg, X_train_selected, y_train, scoring='neg_mean_squared_error', cv=5))
+# print(f"XGBoost Cross-Validation MSE: {xgb_cv_mse:.4f}")
