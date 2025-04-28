@@ -1,7 +1,5 @@
 # Ames Housing Price Prediction
 
-**Ashria Arora** &nbsp;|&nbsp; ashriaarora156@gmail.com &nbsp;|&nbsp; [GitHub Repo](https://github.com/aroraa7/housing-prices-prediction.git)
-
 ## Overview
 This repository implements an end-to-end machine learning pipeline to predict house sale prices on the Ames, Iowa dataset. It covers data cleaning, feature engineering, feature selection, and model benchmarking to identify the most reliable predictor.
 
