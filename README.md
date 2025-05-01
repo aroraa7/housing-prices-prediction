@@ -15,7 +15,7 @@ This repository implements an end-to-end machine learning pipeline to predict ho
 1. **Clone** the repo:
    ```bash
    git clone https://github.com/aroraa7/housing-prices-prediction.git
-   cd ames-housing
+   cd housing-prices-prediction
    ```
 2. **Install** required packages:
    ```bash
